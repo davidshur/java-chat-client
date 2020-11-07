@@ -6,14 +6,13 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Scanner;
-import java.util.logging.SocketHandler;
 
 public class ChatClient {
 
     String serverAddress;
     Scanner in;
     PrintWriter out;
-    JFrame frame = new JFrame("Chat Room");
+    JFrame frame = new JFrame("Chatter");
     JTextField textField = new JTextField(50);
     JTextArea messageArea = new JTextArea(16, 50);
 
@@ -26,8 +25,8 @@ public class ChatClient {
         frame.getContentPane().add(new JScrollPane(messageArea), BorderLayout.CENTER);
         frame.pack();
 
+        // Send on enter then clear to prepare for next message
         textField.addActionListener(new ActionListener() {
-            @Override
             public void actionPerformed(ActionEvent e) {
                 out.println(textField.getText());
                 textField.setText("");
@@ -36,14 +35,15 @@ public class ChatClient {
     }
 
     private String getName() {
-        return JOptionPane.showInputDialog(frame, "Choose a screen name:", "Screen name selection", JOptionPane.PLAIN_MESSAGE);
+        return JOptionPane.showInputDialog(frame, "Choose a screen name:", "Screen name selection",
+                JOptionPane.PLAIN_MESSAGE);
     }
 
     private void run() throws IOException {
         try {
             var socket = new Socket(serverAddress, 59001);
             in = new Scanner(socket.getInputStream());
-            out = new PrintWriter(socket.getOutputStream());
+            out = new PrintWriter(socket.getOutputStream(), true);
 
             while (in.hasNextLine()) {
                 var line = in.nextLine();
@@ -64,7 +64,8 @@ public class ChatClient {
 
     public static void main(String[] args) throws Exception {
         if (args.length != 1) {
-            System.err.println("Pass the server IP as the sole command line argument...");
+            System.err.println("Pass the server IP as the sole command line argument");
+            return;
         }
         var client = new ChatClient(args[0]);
         client.frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
